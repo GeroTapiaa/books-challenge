@@ -1,5 +1,6 @@
 const bcryptjs = require('bcryptjs');
 const db = require('../database/models');
+const {Op} = require('sequelize')
 
 const mainController = {
   home: (req, res) => {
@@ -12,19 +13,49 @@ const mainController = {
       .catch((error) => console.log(error));
   },
   bookDetail: (req, res) => {
-    // Implement look for details in the database
-    res.render('bookDetail');
+    const {id} = req.params
+    db.Book.findByPk(id,{
+      include : ['authors']
+    })
+    .then((book) => {
+      
+      return res.render('bookDetail',{book})
+    })
+    
   },
   bookSearch: (req, res) => {
+    
     res.render('search', { books: [] });
   },
   bookSearchResult: (req, res) => {
-    // Implement search by title
+    db.Book.findAll({
+      where : {
+        title : {
+          [Op.substring] : req.body.title
+        }
+      }
+    })
+    .then((books) => {
+      
+      return res.render('search',{
+        books,
+        title
+        
+      })
+    })
     res.render('search');
   },
   deleteBook: (req, res) => {
     // Implement delete book
-    res.render('home');
+    db.Book.destroy({
+      where : {
+        id : req.params.id
+      }
+    })
+    .then(() => {
+      return res.redirect('/')
+    })
+    res.send('home');
   },
   authors: (req, res) => {
     db.Author.findAll()
@@ -35,7 +66,15 @@ const mainController = {
   },
   authorBooks: (req, res) => {
     // Implement books by author
-    res.render('authorBooks');
+    db.Author.findByPk(req.params.id,{
+      include : ['books']
+    })
+    .then((author)=>{
+      
+    
+       return res.render('authorBooks',{author})
+    }).catch((error)=> console.log(error))
+    
   },
   register: (req, res) => {
     res.render('register');
@@ -59,16 +98,65 @@ const mainController = {
   },
   processLogin: (req, res) => {
     // Implement login process
-    res.render('home');
+    db.User.findOne({
+      where : {
+        email : req.body.email.trim()
+      }
+    })
+    .then((user)=> {
+      if(!user ||  !bcryptjs.compareSync(req.body.password, user.Pass) ){
+        res.render('login', {error : 'Credenciales invalidas'})
+      }else{
+        req.session.userLogin = {
+          name : user.Name,
+          rol : user.CategoryId
+        }
+        res.locals.userLogin = req.session.userLogin
+        if(req.body.recordame){
+          res.cookie("userBook", req.session.userLogin,{
+            maxAge: 1000* 60,
+          });
+        }
+        return res.redirect('/')
+      }
+    })
+    
   },
   edit: (req, res) => {
-    // Implement edit book
-    res.render('editBook', {id: req.params.id})
+    db.Book.findByPk(req.params.id)
+    .then((book) => {
+      return res.render('editBook', {
+        book
+      })
+    })
+    
   },
   processEdit: (req, res) => {
     // Implement edit book
+    const{title, cover, description} = req.body
+    db.Book.update(
+      {
+        title: title.trim(),
+        cover : cover.trim(),
+        description : description.trim()
+      },
+      {
+        where : {
+          id : req.params.id
+        }
+      }
+    )
+    .then(() =>{
+      return res.redirect('/')
+    })
     res.render('home');
+  },
+  logout : (req, res) => {
+    req.session.destroy()
+    res.redirect('/')
   }
 };
+
+  
 
 module.exports = mainController;
