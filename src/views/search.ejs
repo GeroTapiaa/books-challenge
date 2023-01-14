@@ -25,7 +25,11 @@
 
     <div class="list-group">
       
-      
+      <h2><% if (books.length > 0) { %> <% books.forEach(book => { %>
+          <h1><%= book.title %> </h1>
+      <% }) %>
+       
+      <% } %></h2>
       
     </div>
   </div>

@@ -39,11 +39,11 @@ const mainController = {
       
       return res.render('search',{
         books,
-        title
+        
         
       })
     })
-    res.render('search');
+    
   },
   deleteBook: (req, res) => {
     // Implement delete book
@@ -55,7 +55,7 @@ const mainController = {
     .then(() => {
       return res.redirect('/')
     })
-    res.send('home');
+    
   },
   authors: (req, res) => {
     db.Author.findAll()
@@ -124,9 +124,9 @@ const mainController = {
   },
   edit: (req, res) => {
     db.Book.findByPk(req.params.id)
-    .then((book) => {
+    .then((books) => {
       return res.render('editBook', {
-        book
+        books
       })
     })
     
@@ -149,7 +149,7 @@ const mainController = {
     .then(() =>{
       return res.redirect('/')
     })
-    res.render('home');
+   
   },
   logout : (req, res) => {
     req.session.destroy()
