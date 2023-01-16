@@ -16,6 +16,10 @@ app.use(session({
 }));
 app.use(cookie());
 app.use(cookieCheck)
+app.use((req,res,next) => {
+  req.session.userLogin ? res.locals.userLogin = req.session.userLogin : null
+next()
+})
 
 app.set('view engine', 'ejs');
 app.set('views', 'src/views');

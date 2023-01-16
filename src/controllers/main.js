@@ -55,6 +55,7 @@ const mainController = {
     .then(() => {
       return res.redirect('/')
     })
+    .catch((error) => console.log(error));
     
   },
   authors: (req, res) => {
@@ -105,7 +106,7 @@ const mainController = {
     })
     .then((user)=> {
       if(!user ||  !bcryptjs.compareSync(req.body.password, user.Pass) ){
-        res.render('login', {error : 'Credenciales invalidas'})
+        res.render('home', {error : 'Credenciales invalidas'})
       }else{
         req.session.userLogin = {
           name : user.Name,
@@ -153,7 +154,7 @@ const mainController = {
   },
   logout : (req, res) => {
     req.session.destroy()
-    res.redirect('/')
+     return res.redirect('/')
   }
 };
 
